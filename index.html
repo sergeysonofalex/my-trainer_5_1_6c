@@ -1,0 +1,1668 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎮 ПО и ИИ · Кибер-квест 5 класс</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg0:#050510;--bg1:#0a0a20;--bg2:#12122e;--bg3:#1a1a40;
+  --card:rgba(22,22,54,.82);
+  --line:rgba(120,130,255,.18);
+  --line2:rgba(120,130,255,.35);
+  --txt:#e2e8f0;--muted:#8892b0;
+  --cyan:#00f5ff;--magenta:#ff00e5;--purple:#a855f7;
+  --green:#22c55e;--orange:#ff9500;--red:#ff3366;--gold:#ffd700;
+  --blue:#3b82f6;
+}
+html,body{height:100%;overflow:hidden;}
+body{
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  background:
+    radial-gradient(circle at 15% 10%, rgba(168,85,247,.18), transparent 45%),
+    radial-gradient(circle at 85% 90%, rgba(0,245,255,.15), transparent 45%),
+    radial-gradient(circle at 50% 50%, rgba(255,0,229,.08), transparent 60%),
+    linear-gradient(135deg,var(--bg0),var(--bg1) 50%,var(--bg2));
+  color:var(--txt);font-size:16px;line-height:1.35;
+  -webkit-tap-highlight-color:transparent;overflow:hidden;
+}
+body::before{
+  content:"";position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(120,130,255,.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(120,130,255,.03) 1px,transparent 1px);
+  background-size:40px 40px;pointer-events:none;z-index:0;
+}
+button{font-family:inherit;cursor:pointer;border:none;color:inherit;}
+.hidden{display:none !important;}
+.screen{display:none;height:100vh;width:100%;position:relative;z-index:1;}
+.screen.active{display:flex;flex-direction:column;}
+
+@keyframes shakeScreen{
+  0%,100%{transform:translate(0,0);}
+  10%{transform:translate(-8px,4px);}20%{transform:translate(8px,-4px);}
+  30%{transform:translate(-6px,-6px);}40%{transform:translate(6px,6px);}
+  50%{transform:translate(-4px,4px);}60%{transform:translate(4px,-4px);}
+  70%{transform:translate(-2px,2px);}80%{transform:translate(2px,-2px);}
+  90%{transform:translate(-1px,1px);}
+}
+.shake{animation:shakeScreen .5s ease;}
+
+.confetti{
+  position:fixed;width:12px;height:12px;border-radius:50%;
+  pointer-events:none;z-index:500;animation:confFly 1.2s ease-out forwards;
+}
+@keyframes confFly{
+  0%{opacity:1;transform:translate(0,0) scale(1);}
+  100%{opacity:0;transform:translate(var(--tx),var(--ty)) scale(.3) rotate(360deg);}
+}
+.float-score{
+  position:fixed;pointer-events:none;font-weight:900;font-size:32px;
+  color:var(--gold);text-shadow:0 0 20px rgba(255,215,0,.9),0 0 40px rgba(255,215,0,.5);
+  animation:floatUp 1.1s ease forwards;z-index:600;
+}
+@keyframes floatUp{
+  0%{opacity:0;transform:translateY(0) scale(.5);}
+  20%{opacity:1;transform:translateY(-15px) scale(1.3);}
+  100%{opacity:0;transform:translateY(-90px) scale(1);}
+}
+.dmg-float{
+  position:fixed;pointer-events:none;font-weight:900;font-size:28px;
+  color:var(--red);text-shadow:0 0 20px rgba(255,51,102,.9);
+  animation:floatUp 1.1s ease forwards;z-index:600;
+}
+
+/* ══════════ START SCREEN ══════════ */
+#screen-start.active{
+  align-items:center;justify-content:center;padding:16px;overflow-y:auto;
+}
+.start-card{
+  background:var(--card);backdrop-filter:blur(20px);
+  border:1.5px solid var(--line2);border-radius:26px;
+  padding:22px 36px 26px;max-width:780px;width:100%;
+  box-shadow:0 0 60px rgba(168,85,247,.25),0 0 100px rgba(0,245,255,.1),inset 0 0 40px rgba(120,130,255,.05);
+  text-align:center;position:relative;
+}
+.start-card::before{
+  content:"";position:absolute;inset:-2px;border-radius:28px;
+  background:linear-gradient(135deg,var(--cyan),var(--magenta),var(--purple));
+  z-index:-1;opacity:.35;filter:blur(20px);
+}
+.start-card h1{
+  font-size:26px;line-height:1.15;margin-bottom:4px;
+  background:linear-gradient(135deg,var(--cyan),var(--magenta));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  font-weight:900;letter-spacing:-.5px;
+}
+.start-card .sub{color:var(--muted);font-size:14px;margin-bottom:14px;}
+
+/* --- панель тематических иконок --- */
+.theme-icons{
+  display:grid;grid-template-columns:repeat(8,1fr);
+  gap:8px;margin:8px 0 16px;
+}
+.theme-icon{
+  background:rgba(0,0,0,.35);border:1.5px solid var(--line2);
+  border-radius:14px;padding:10px 4px;position:relative;
+  transition:all .22s;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+}
+.theme-icon:hover{
+  transform:translateY(-4px) scale(1.05);
+  border-color:var(--cyan);
+  box-shadow:0 8px 24px rgba(0,245,255,.35),inset 0 0 16px rgba(0,245,255,.08);
+}
+.theme-icon svg{
+  width:30px;height:30px;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;
+  fill:none;transition:filter .2s;
+}
+.theme-icon .lbl{font-size:9px;color:var(--muted);font-weight:700;letter-spacing:.2px;text-transform:uppercase;}
+.theme-icon svg.ic-blue{stroke:#60a5fa;filter:drop-shadow(0 0 6px rgba(96,165,250,.7));}
+.theme-icon svg.ic-cyan{stroke:var(--cyan);filter:drop-shadow(0 0 6px rgba(0,245,255,.7));}
+.theme-icon svg.ic-purple{stroke:#c084fc;filter:drop-shadow(0 0 6px rgba(192,132,252,.7));}
+.theme-icon svg.ic-green{stroke:#4ade80;filter:drop-shadow(0 0 6px rgba(74,222,128,.7));}
+.theme-icon svg.ic-orange{stroke:#fb923c;filter:drop-shadow(0 0 6px rgba(251,146,60,.7));}
+.theme-icon svg.ic-pink{stroke:#f472b6;filter:drop-shadow(0 0 6px rgba(244,114,182,.7));}
+.theme-icon svg.ic-gold{stroke:var(--gold);filter:drop-shadow(0 0 6px rgba(255,215,0,.7));}
+.theme-icon svg.ic-red{stroke:#f87171;filter:drop-shadow(0 0 6px rgba(248,113,113,.7));}
+
+.badges{display:flex;justify-content:center;gap:7px;flex-wrap:wrap;margin-bottom:16px;}
+.badges span{
+  background:rgba(120,130,255,.1);border:1px solid var(--line2);
+  border-radius:999px;padding:5px 12px;font-size:12px;font-weight:700;color:var(--txt);
+}
+.badges span b{color:var(--gold);}
+
+.name-label{display:block;text-align:left;font-weight:700;font-size:14px;margin-bottom:5px;color:var(--txt);}
+#nameInput{
+  width:100%;padding:12px 15px;font-size:18px;font-weight:700;font-family:inherit;
+  border:2.5px solid var(--green);background:rgba(34,197,94,.08);
+  border-radius:13px;color:#a7f3d0;outline:none;transition:box-shadow .2s;
+}
+#nameInput:focus{box-shadow:0 0 0 4px rgba(34,197,94,.25),0 0 20px rgba(34,197,94,.4);}
+.hint-name{font-size:12px;color:var(--muted);text-align:left;margin-top:5px;min-height:16px;}
+.hint-name.ok{color:#4ade80;font-weight:700;}
+
+.btn{
+  border-radius:13px;padding:12px 22px;font-size:16px;font-weight:800;
+  transition:transform .12s,box-shadow .18s,filter .18s;
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  position:relative;
+}
+.btn:active{transform:scale(.94);}
+.btn-primary{
+  background:linear-gradient(135deg,var(--purple),var(--magenta));color:#fff;
+  box-shadow:0 0 24px rgba(168,85,247,.5),inset 0 0 15px rgba(255,255,255,.12);
+  border:1.5px solid rgba(255,255,255,.15);
+}
+.btn-primary:hover:not(:disabled){filter:brightness(1.15);
+  box-shadow:0 0 32px rgba(168,85,247,.7),inset 0 0 20px rgba(255,255,255,.2);}
+.btn-primary:disabled{background:rgba(80,80,110,.4);color:#555;box-shadow:none;cursor:not-allowed;}
+.btn-green{
+  background:linear-gradient(135deg,var(--green),#16a34a);color:#fff;
+  box-shadow:0 0 24px rgba(34,197,94,.5),inset 0 0 15px rgba(255,255,255,.12);
+}
+.btn-green:hover{filter:brightness(1.12);}
+.btn-orange{
+  background:linear-gradient(135deg,var(--orange),#ea580c);color:#fff;
+  box-shadow:0 0 24px rgba(255,149,0,.5);
+}
+.btn-cyan{
+  background:linear-gradient(135deg,var(--cyan),#0891b2);color:#032b30;
+  box-shadow:0 0 24px rgba(0,245,255,.5),inset 0 0 12px rgba(255,255,255,.2);
+  font-weight:900;
+}
+.btn-cyan:hover{filter:brightness(1.12);}
+.btn-ghost{background:rgba(120,130,255,.1);border:1.5px solid var(--line2);color:var(--txt);}
+.btn-ghost:hover{background:rgba(120,130,255,.2);}
+#startBtn{width:100%;padding:14px;font-size:18px;margin-top:6px;}
+
+/* ══════════ GAME ══════════ */
+.game-wrap{
+  display:flex;flex-direction:column;height:100vh;max-width:1200px;
+  margin:0 auto;padding:8px 14px 10px;gap:8px;
+}
+.hud{
+  display:grid;grid-template-columns:auto 1fr auto auto auto auto;
+  gap:10px;align-items:center;
+  background:var(--card);backdrop-filter:blur(15px);
+  border:1.5px solid var(--line);border-radius:16px;
+  padding:8px 14px;flex:0 0 auto;
+  box-shadow:0 4px 20px rgba(0,0,0,.3),inset 0 0 30px rgba(120,130,255,.04);
+}
+.hud-item{display:flex;align-items:center;gap:6px;font-weight:800;font-size:15px;white-space:nowrap;}
+#livesBox .heart{transition:all .3s;display:inline-block;}
+#livesBox .heart.dead{opacity:.15;filter:grayscale(1) brightness(.5);transform:scale(.8);}
+#livesBox.low .heart:not(.dead){animation:heartBeat .7s infinite;}
+@keyframes heartBeat{0%,100%{transform:scale(1);}50%{transform:scale(1.2);}}
+.block-pill{
+  padding:5px 12px;border-radius:999px;font-size:11px;font-weight:900;
+  letter-spacing:.5px;text-transform:uppercase;
+  background:rgba(59,130,246,.15);color:var(--cyan);
+  border:1px solid rgba(0,245,255,.3);box-shadow:0 0 10px rgba(0,245,255,.2);
+}
+.block-pill.b2{background:rgba(168,85,247,.15);color:var(--purple);
+  border-color:rgba(168,85,247,.4);box-shadow:0 0 10px rgba(168,85,247,.3);}
+.block-pill.b3{background:rgba(255,51,102,.15);color:var(--red);
+  border-color:rgba(255,51,102,.4);box-shadow:0 0 10px rgba(255,51,102,.3);}
+.progress-mini{height:8px;background:rgba(0,0,0,.4);border-radius:999px;overflow:hidden;min-width:80px;
+  border:1px solid var(--line);}
+.progress-mini-fill{height:100%;width:0;
+  background:linear-gradient(90deg,var(--cyan),var(--magenta));
+  border-radius:999px;transition:width .35s ease;
+  box-shadow:0 0 12px rgba(0,245,255,.6);}
+#scoreBox{color:var(--gold);text-shadow:0 0 10px rgba(255,215,0,.5);}
+#timerBox.warn{color:var(--red);animation:blink .8s infinite;}
+@keyframes blink{50%{opacity:.4;}}
+#timerBox.frozen{color:var(--cyan);text-shadow:0 0 10px var(--cyan);}
+#streakBox.hot{color:var(--orange);text-shadow:0 0 12px var(--orange);}
+#streakBox .fire{animation:firePulse .5s ease infinite alternate;display:inline-block;}
+@keyframes firePulse{from{transform:scale(1) rotate(-5deg);}to{transform:scale(1.3) rotate(5deg);}}
+#streakBox.cold{color:var(--muted);opacity:.5;}
+
+.power-bar{display:flex;gap:7px;justify-content:center;flex:0 0 auto;flex-wrap:wrap;}
+.power-btn{
+  background:var(--card);backdrop-filter:blur(15px);
+  border:1.5px solid var(--line2);border-radius:12px;
+  padding:7px 12px;font-size:13px;font-weight:800;
+  display:flex;align-items:center;gap:5px;
+  transition:all .15s;color:var(--txt);position:relative;
+}
+.power-btn:hover:not(:disabled){transform:translateY(-2px);
+  border-color:var(--cyan);box-shadow:0 0 14px rgba(0,245,255,.4);}
+.power-btn:disabled{opacity:.3;cursor:not-allowed;}
+.power-btn .cnt{
+  background:var(--magenta);color:#fff;font-size:10px;font-weight:900;
+  padding:1px 6px;border-radius:999px;min-width:16px;text-align:center;
+  box-shadow:0 0 8px rgba(255,0,229,.6);
+}
+.power-btn.active{
+  border-color:var(--gold);background:rgba(255,215,0,.12);
+  box-shadow:0 0 20px rgba(255,215,0,.6);
+  animation:pulseGold .8s ease infinite alternate;
+}
+@keyframes pulseGold{from{box-shadow:0 0 15px rgba(255,215,0,.5);}to{box-shadow:0 0 30px rgba(255,215,0,.9);}}
+
+.task-card{
+  flex:1 1 auto;background:var(--card);backdrop-filter:blur(15px);
+  border:1.5px solid var(--line);border-radius:20px;
+  padding:16px 22px;overflow-y:auto;position:relative;
+  box-shadow:0 8px 30px rgba(0,0,0,.4),inset 0 0 40px rgba(120,130,255,.04);
+}
+.task-card.boss{
+  border-color:rgba(255,215,0,.5);
+  box-shadow:0 0 40px rgba(255,215,0,.25),inset 0 0 40px rgba(255,215,0,.06);
+}
+.task-card.boss::before{
+  content:"👑 BOSS";position:absolute;top:-1px;right:18px;
+  background:linear-gradient(135deg,var(--gold),var(--orange));
+  color:#1a1200;font-size:11px;font-weight:900;padding:3px 12px;
+  border-radius:0 0 10px 10px;letter-spacing:1px;
+  box-shadow:0 4px 15px rgba(255,215,0,.5);
+}
+.task-head{display:flex;gap:12px;align-items:flex-start;margin-bottom:10px;}
+.task-num{
+  flex:0 0 auto;width:40px;height:40px;border-radius:12px;
+  background:linear-gradient(135deg,var(--purple),var(--magenta));
+  color:#fff;display:grid;place-items:center;font-weight:900;font-size:17px;
+  box-shadow:0 0 20px rgba(168,85,247,.6),inset 0 0 10px rgba(255,255,255,.15);
+  border:1px solid rgba(255,255,255,.15);
+}
+.boss .task-num{
+  background:linear-gradient(135deg,var(--gold),var(--orange));
+  box-shadow:0 0 24px rgba(255,215,0,.7);color:#1a1200;
+}
+.task-q{font-size:19px;font-weight:800;color:var(--txt);padding-top:5px;line-height:1.35;}
+
+.answers{display:flex;flex-direction:column;gap:8px;}
+.opt{
+  display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+  border:2px solid var(--line2);border-radius:14px;padding:11px 16px;
+  background:rgba(26,26,62,.4);font-size:16px;font-weight:600;color:var(--txt);
+  transition:all .15s;
+}
+.opt:hover:not(:disabled){border-color:var(--cyan);background:rgba(0,245,255,.06);
+  transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,245,255,.2);}
+.opt .mk{
+  flex:0 0 auto;width:30px;height:30px;border-radius:50%;
+  border:2px solid var(--line2);background:rgba(0,0,0,.3);
+  display:grid;place-items:center;font-weight:900;font-size:14px;
+  color:var(--muted);transition:all .15s;
+}
+.opt.selected{border-color:var(--cyan);background:rgba(0,245,255,.1);
+  box-shadow:0 0 20px rgba(0,245,255,.35),inset 0 0 12px rgba(0,245,255,.1);}
+.opt.selected .mk{border-color:var(--cyan);background:var(--cyan);color:#032b30;box-shadow:0 0 12px var(--cyan);}
+.opt.correct{border-color:var(--green);background:rgba(34,197,94,.12);
+  box-shadow:0 0 24px rgba(34,197,94,.5),inset 0 0 15px rgba(34,197,94,.1);animation:pop .4s;}
+.opt.correct .mk{border-color:var(--green);background:var(--green);color:#fff;box-shadow:0 0 14px var(--green);}
+.opt.wrong{border-color:var(--red);background:rgba(255,51,102,.1);
+  box-shadow:0 0 24px rgba(255,51,102,.4);animation:shakeEl .4s;}
+.opt.wrong .mk{border-color:var(--red);background:var(--red);color:#fff;box-shadow:0 0 14px var(--red);}
+.opt.eliminated{opacity:.25;pointer-events:none;text-decoration:line-through;}
+@keyframes pop{0%{transform:scale(1);}50%{transform:scale(1.03);}100%{transform:scale(1);}}
+@keyframes shakeEl{0%,100%{transform:translateX(0);}20%{transform:translateX(-8px);}60%{transform:translateX(8px);}80%{transform:translateX(-3px);}}
+.tf-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+.match-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.match-col{display:flex;flex-direction:column;gap:8px;}
+.mi{
+  display:flex;align-items:center;gap:10px;text-align:left;
+  border:2px solid var(--line2);border-radius:13px;padding:10px 12px;
+  background:rgba(26,26,62,.4);font-size:15px;font-weight:600;color:var(--txt);
+  transition:all .15s;
+}
+.mi:hover:not(:disabled){border-color:var(--purple);background:rgba(168,85,247,.08);}
+.mi.selected{border-color:var(--purple);background:rgba(168,85,247,.15);box-shadow:0 0 20px rgba(168,85,247,.4);}
+.mi.paired{border-color:rgba(168,85,247,.6);background:rgba(168,85,247,.08);}
+.mi.correct{border-color:var(--green);background:rgba(34,197,94,.12);box-shadow:0 0 16px rgba(34,197,94,.4);}
+.mi.wrong{border-color:var(--red);background:rgba(255,51,102,.1);}
+.mi .mb{
+  flex:0 0 auto;width:28px;height:28px;border-radius:9px;
+  background:rgba(120,130,255,.15);color:var(--txt);
+  display:grid;place-items:center;font-weight:900;font-size:13px;
+}
+.mi.paired .mb{background:var(--purple);color:#fff;box-shadow:0 0 10px var(--purple);}
+.mi.correct .mb{background:var(--green);color:#fff;box-shadow:0 0 10px var(--green);}
+.mi.wrong .mb{background:var(--red);color:#fff;}
+
+.pool-lbl{font-size:12px;color:var(--muted);font-weight:700;margin-bottom:6px;
+  text-transform:uppercase;letter-spacing:.5px;}
+.pool{
+  background:rgba(0,0,0,.2);border:2px dashed rgba(120,130,255,.3);
+  border-radius:14px;padding:10px 12px;margin-bottom:10px;
+  min-height:60px;transition:all .15s;
+}
+.pool.over{border-color:var(--cyan);background:rgba(0,245,255,.06);box-shadow:inset 0 0 20px rgba(0,245,255,.15);}
+.pool-items{display:flex;flex-wrap:wrap;gap:7px;}
+.basket-grid{display:grid;gap:10px;}
+.basket{
+  border:2.5px dashed rgba(120,130,255,.3);border-radius:16px;
+  padding:10px;min-height:110px;background:rgba(0,0,0,.2);transition:all .15s;
+}
+.basket.over{border-color:var(--cyan);background:rgba(0,245,255,.08);transform:scale(1.02);box-shadow:0 0 20px rgba(0,245,255,.3);}
+.basket h4{font-size:13px;font-weight:900;text-align:center;margin-bottom:7px;
+  text-transform:uppercase;letter-spacing:.5px;}
+.basket[data-b="0"] h4{color:var(--cyan);}
+.basket[data-b="1"] h4{color:var(--green);}
+.basket[data-b="2"] h4{color:var(--purple);}
+.basket .items{display:flex;flex-direction:column;gap:6px;}
+.chip{
+  background:rgba(26,26,62,.7);border:2px solid var(--line2);
+  border-radius:11px;padding:7px 11px;font-size:14px;font-weight:600;
+  color:var(--txt);cursor:grab;user-select:none;transition:all .15s;
+}
+.chip:hover{border-color:var(--cyan);transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,245,255,.25);}
+.chip.selected{border-color:var(--cyan);background:rgba(0,245,255,.1);box-shadow:0 0 16px rgba(0,245,255,.4);}
+.chip.correct{border-color:var(--green);background:rgba(34,197,94,.15);}
+.chip.wrong{border-color:var(--red);background:rgba(255,51,102,.12);}
+
+.order-wrap{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.col-title{font-size:12px;font-weight:800;color:var(--muted);margin-bottom:6px;
+  text-transform:uppercase;letter-spacing:.5px;}
+.order-pool,.order-seq{
+  display:flex;flex-direction:column;gap:7px;min-height:100px;
+  background:rgba(0,0,0,.2);border:2px dashed rgba(120,130,255,.3);
+  border-radius:14px;padding:9px;
+}
+.order-seq{border-style:solid;border-color:rgba(168,85,247,.5);background:rgba(168,85,247,.06);}
+.seq-chip{display:flex;align-items:center;gap:9px;border-color:rgba(168,85,247,.6);background:rgba(26,26,62,.7);}
+.seq-num{
+  flex:0 0 auto;width:24px;height:24px;border-radius:7px;
+  background:var(--purple);color:#fff;display:grid;place-items:center;
+  font-weight:900;font-size:12px;box-shadow:0 0 10px rgba(168,85,247,.6);
+}
+.empty-note{font-size:13px;color:var(--muted);text-align:center;padding:14px 4px;font-style:italic;opacity:.6;}
+
+.feedback{border-radius:13px;padding:11px 15px;margin-top:10px;font-size:15px;
+  animation:fadeIn .25s;font-weight:600;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:translateY(0);}}
+.feedback.ok{background:rgba(34,197,94,.12);border-left:4px solid var(--green);
+  color:#a7f3d0;box-shadow:0 0 16px rgba(34,197,94,.2);}
+.feedback.bad{background:rgba(255,51,102,.1);border-left:4px solid var(--red);
+  color:#fecaca;box-shadow:0 0 16px rgba(255,51,102,.2);}
+.fb-title{font-weight:900;font-size:16px;margin-bottom:3px;}
+
+.game-footer{flex:0 0 auto;display:flex;justify-content:center;gap:12px;padding-top:2px;}
+.game-footer .btn{min-width:190px;}
+
+.overlay{
+  position:fixed;inset:0;background:rgba(5,5,16,.85);backdrop-filter:blur(8px);
+  display:flex;align-items:center;justify-content:center;z-index:100;padding:20px;
+}
+.ov-card{
+  background:linear-gradient(135deg,rgba(26,26,62,.95),rgba(18,18,46,.95));
+  border:2px solid var(--line2);border-radius:24px;
+  padding:28px 36px;max-width:540px;text-align:center;
+  box-shadow:0 0 80px rgba(168,85,247,.4),inset 0 0 40px rgba(120,130,255,.06);
+  animation:popIn .35s ease;position:relative;
+}
+.ov-card::before{
+  content:"";position:absolute;inset:-2px;border-radius:26px;
+  background:linear-gradient(135deg,var(--cyan),var(--magenta));
+  z-index:-1;opacity:.5;filter:blur(20px);
+}
+@keyframes popIn{from{opacity:0;transform:scale(.85);}to{opacity:1;transform:scale(1);}}
+.ov-card .em{font-size:56px;margin-bottom:8px;filter:drop-shadow(0 0 20px currentColor);}
+.ov-card h3{font-size:22px;margin-bottom:10px;font-weight:900;
+  background:linear-gradient(135deg,var(--cyan),var(--magenta));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+.ov-card p{color:var(--muted);font-size:14px;margin-bottom:18px;line-height:1.5;}
+.ov-card p b{color:var(--gold);}
+
+.toast{
+  position:fixed;top:20px;right:20px;z-index:800;
+  background:linear-gradient(135deg,var(--gold),var(--orange));
+  color:#1a1200;padding:12px 20px;border-radius:14px;
+  font-weight:900;font-size:14px;
+  box-shadow:0 12px 40px rgba(255,215,0,.6),0 0 60px rgba(255,149,0,.4);
+  animation:toastIn .4s ease, toastOut .4s ease 2.8s forwards;
+  display:flex;align-items:center;gap:10px;border:1.5px solid rgba(255,255,255,.4);
+}
+@keyframes toastIn{from{opacity:0;transform:translateX(80px);}to{opacity:1;transform:translateX(0);}}
+@keyframes toastOut{to{opacity:0;transform:translateX(80px);}}
+
+#screen-result.active,#screen-defeat.active{overflow-y:auto;padding:20px 14px 32px;display:block;}
+.result-card{
+  max-width:820px;margin:0 auto;
+  background:linear-gradient(135deg,rgba(26,26,62,.92),rgba(18,18,46,.92));
+  backdrop-filter:blur(20px);border:2px solid var(--line2);border-radius:26px;
+  padding:24px 34px 30px;
+  box-shadow:0 0 80px rgba(168,85,247,.3),inset 0 0 60px rgba(120,130,255,.05);
+  position:relative;
+}
+.result-card::before{
+  content:"";position:absolute;inset:-3px;border-radius:29px;
+  background:linear-gradient(135deg,var(--cyan),var(--purple),var(--magenta));
+  z-index:-1;opacity:.4;filter:blur(24px);
+}
+.res-top{text-align:center;font-size:64px;line-height:1;margin-bottom:4px;
+  filter:drop-shadow(0 0 30px currentColor);animation:float 3s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+.res-title{text-align:center;font-size:24px;font-weight:900;margin-bottom:4px;
+  background:linear-gradient(135deg,var(--cyan),var(--magenta));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+.res-sub{text-align:center;color:var(--muted);font-size:13px;margin-bottom:14px;}
+.res-name{
+  text-align:center;font-size:26px;font-weight:900;color:var(--gold);
+  padding:12px 18px;border-radius:16px;
+  background:linear-gradient(135deg,rgba(255,215,0,.12),rgba(255,149,0,.12));
+  border:2px dashed rgba(255,215,0,.5);margin-bottom:16px;
+  word-break:break-word;text-shadow:0 0 20px rgba(255,215,0,.6);
+}
+.res-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;}
+.res-stat{
+  background:rgba(0,0,0,.3);border:1.5px solid var(--line2);
+  border-radius:16px;padding:12px 8px;text-align:center;transition:all .2s;
+}
+.res-stat:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,245,255,.2);}
+.res-stat .big{font-size:30px;font-weight:900;line-height:1;color:var(--cyan);text-shadow:0 0 16px rgba(0,245,255,.6);}
+.res-stat.accent{background:linear-gradient(135deg,rgba(255,215,0,.1),rgba(255,149,0,.05));border-color:rgba(255,215,0,.4);}
+.res-stat.accent .big{color:var(--gold);text-shadow:0 0 20px rgba(255,215,0,.8);}
+.res-stat .lbl{font-size:11px;color:var(--muted);font-weight:700;margin-top:5px;text-transform:uppercase;letter-spacing:.4px;}
+.res-break{
+  text-align:center;font-size:13px;color:var(--txt);
+  background:rgba(0,0,0,.3);border:1px solid var(--line);
+  border-radius:12px;padding:10px 14px;margin-bottom:16px;font-weight:600;
+}
+.res-break b{color:var(--cyan);}
+.ach-title{font-size:15px;font-weight:900;margin-bottom:8px;color:var(--txt);text-transform:uppercase;letter-spacing:1px;}
+.ach-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-bottom:18px;}
+.ach-item{
+  background:rgba(0,0,0,.3);border:1.5px solid var(--line);border-radius:12px;
+  padding:9px;text-align:center;font-size:11px;color:var(--muted);font-weight:700;
+}
+.ach-item.got{
+  background:linear-gradient(135deg,rgba(255,215,0,.15),rgba(255,149,0,.1));
+  border-color:var(--gold);color:var(--gold);
+  box-shadow:0 0 20px rgba(255,215,0,.4);
+  animation:goldPulse 1.5s ease infinite alternate;
+}
+@keyframes goldPulse{from{box-shadow:0 0 15px rgba(255,215,0,.3);}to{box-shadow:0 0 30px rgba(255,215,0,.6);}}
+.ach-item .ae{font-size:22px;display:block;margin-bottom:2px;filter:drop-shadow(0 0 6px currentColor);}
+.descr-title{font-size:15px;font-weight:900;margin-bottom:8px;color:var(--txt);text-transform:uppercase;letter-spacing:1px;}
+.descr-table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px;margin-bottom:20px;
+  border-radius:14px;overflow:hidden;box-shadow:0 0 0 1.5px var(--line);}
+.descr-table th{background:rgba(120,130,255,.1);color:var(--txt);font-size:12px;
+  text-align:left;padding:9px 12px;font-weight:900;text-transform:uppercase;letter-spacing:.5px;}
+.descr-table td{padding:9px 12px;border-top:1.5px solid var(--line);color:var(--muted);vertical-align:top;}
+.descr-table td:first-child{font-weight:900;color:var(--txt);white-space:nowrap;width:90px;text-align:center;font-size:12px;}
+.descr-table tr.active td{background:rgba(34,197,94,.12);color:#a7f3d0;font-weight:700;}
+.descr-table tr.active td:first-child{background:var(--green);color:#fff;text-shadow:0 0 8px rgba(255,255,255,.5);}
+.res-actions{text-align:center;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+
+@media (max-width:900px){
+  body{font-size:15px;}
+  .hud{grid-template-columns:auto auto 1fr auto auto;gap:6px;padding:6px 10px;}
+  .hud-item{font-size:13px;}
+  .progress-mini{min-width:50px;}
+  .task-q{font-size:17px;}
+  .match-grid,.order-wrap{grid-template-columns:1fr;}
+  .basket-grid{grid-template-columns:1fr !important;}
+  .res-stats{grid-template-columns:1fr 1fr;}
+  .theme-icons{grid-template-columns:repeat(4,1fr);}
+}
+@media (max-width:600px){
+  .hud{grid-template-columns:1fr 1fr;gap:6px;}
+  .hud .progress-mini{grid-column:1/-1;}
+  .tf-grid{grid-template-columns:1fr;}
+  .res-stats{grid-template-columns:1fr;}
+  .game-footer .btn{min-width:130px;font-size:14px;padding:10px 14px;}
+  .power-bar{gap:5px;}
+  .power-btn{font-size:11px;padding:5px 9px;}
+  .theme-icons{grid-template-columns:repeat(4,1fr);gap:6px;}
+  .theme-icon svg{width:24px;height:24px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════ START ══════════ -->
+<div class="screen active" id="screen-start">
+  <div class="start-card">
+    <h1>🤖 КИБЕР-КВЕСТ · ПО и ИИ 💻</h1>
+    <p class="sub">Интерактивная игра-тренажёр · 5 класс · Информатика и ИИ</p>
+
+    <!-- Панель тематических SVG-иконок -->
+    <div class="theme-icons">
+      <div class="theme-icon">
+        <svg class="ic-blue" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        <span class="lbl">ПК</span>
+      </div>
+      <div class="theme-icon">
+        <svg class="ic-cyan" viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 4v4M9 14h.01M15 14h.01M9.5 17h5"/><circle cx="12" cy="3" r="1.2"/></svg>
+        <span class="lbl">Робот</span>
+      </div>
+      <div class="theme-icon">
+        <svg class="ic-pink" viewBox="0 0 24 24"><path d="M12 5.5A3 3 0 0 0 6.2 7 3 3 0 0 0 5.4 12.8 3 3 0 0 0 7.5 18a3 3 0 0 0 4.5 1.6V5.5z"/><path d="M12 5.5A3 3 0 0 1 17.8 7a3 3 0 0 1 .8 5.8A3 3 0 0 1 16.5 18a3 3 0 0 1-4.5 1.6V5.5z"/></svg>
+        <span class="lbl">ИИ</span>
+      </div>
+      <div class="theme-icon">
+        <svg class="ic-green" viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 4.5-3 7.6-7 9-4-1.4-7-4.5-7-9V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg>
+        <span class="lbl">Антивирус</span>
+      </div>
+      <div class="theme-icon">
+        <svg class="ic-orange" viewBox="0 0 24 24"><path d="M8 6l-5 6 5 6M16 6l5 6-5 6"/></svg>
+        <span class="lbl">Код</span>
+      </div>
+      <div class="theme-icon">
+        <svg class="ic-purple" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        <span class="lbl">ПО</span>
+      </div>
+      <div class="theme-icon">
+        <svg class="ic-gold" viewBox="0 0 24 24"><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/><circle cx="12" cy="12" r="4"/></svg>
+        <span class="lbl">Нейро</span>
+      </div>
+      <div class="theme-icon">
+        <svg class="ic-red" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10v4M10 10v4M14 10v4M18 10v4"/></svg>
+        <span class="lbl">Сервер</span>
+      </div>
+    </div>
+
+    <div class="badges">
+      <span>🎯 30 заданий</span>
+      <span>🏝️ 3 блока</span>
+      <span>👑 БОСС-вопросы</span>
+      <span>⚡ 4 усилителя</span>
+      <span>🏆 Достижения</span>
+      <span>❤️ 10 жизней</span>
+      <span>⏱️ 25 минут</span>
+    </div>
+
+    <label class="name-label" for="nameInput">Введи своё имя:</label>
+    <input type="text" id="nameInput" autocomplete="off" spellcheck="false">
+    <div class="hint-name" id="nameHint">Введи минимум 2 символа, чтобы начать</div>
+
+    <button class="btn btn-primary" id="startBtn" disabled>🎮 Начать игру</button>
+  </div>
+</div>
+
+<!-- ══════════ GAME ══════════ -->
+<div class="screen" id="screen-game">
+  <div class="game-wrap">
+    <div class="hud">
+      <div class="hud-item" id="livesBox">❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️</div>
+      <div class="progress-mini"><div class="progress-mini-fill" id="progFill"></div></div>
+      <div class="hud-item"><span class="block-pill" id="blockPill">🏝️ Блок 1</span></div>
+      <div class="hud-item">💎 <span id="scoreBox">0</span></div>
+      <div class="hud-item" id="streakBox">🔥 <span id="streakVal">x1</span></div>
+      <div class="hud-item" id="timerBox">⏱️ <span id="timerVal">25:00</span></div>
+    </div>
+
+    <div class="power-bar">
+      <button class="power-btn" id="pwHint" title="50/50 — убрать 2 неверных ответа">💡 50/50 <span class="cnt" id="pwHintCnt">3</span></button>
+      <button class="power-btn" id="pwFreeze" title="Заморозка — таймер стоит 30 сек">❄️ Заморозка <span class="cnt" id="pwFreezeCnt">1</span></button>
+      <button class="power-btn" id="pwDouble" title="Двойной удар — 2x очков">⚡ 2x <span class="cnt" id="pwDoubleCnt">2</span></button>
+      <button class="power-btn" id="pwSkip" title="Пропустить задание">⏭️ Пропуск <span class="cnt" id="pwSkipCnt">1</span></button>
+    </div>
+
+    <div class="task-card" id="taskCard">
+      <div class="task-head">
+        <div class="task-num" id="taskNum">1</div>
+        <div class="task-q" id="taskQ"></div>
+      </div>
+      <div id="answerArea"></div>
+      <div class="feedback hidden" id="feedback"></div>
+    </div>
+
+    <div class="game-footer">
+      <button class="btn btn-cyan" id="checkBtn">✓ ПРОВЕРИТЬ</button>
+      <button class="btn btn-green hidden" id="nextBtn">Далее →</button>
+      <button class="btn btn-ghost" id="soundBtn" title="Звук">🔊</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ RESULT ══════════ -->
+<div class="screen" id="screen-result">
+  <div class="result-card">
+    <div class="res-top" id="resTop">🏆</div>
+    <h2 class="res-title" id="resTitle">ПОБЕДА!</h2>
+    <p class="res-sub">Кибер-квест · ПО и искусственный интеллект</p>
+
+    <div class="res-name" id="resName">—</div>
+
+    <div class="res-stats">
+      <div class="res-stat"><div class="big" id="resCorrect">0</div><div class="lbl">верных из 30</div></div>
+      <div class="res-stat accent"><div class="big" id="resScore">0</div><div class="lbl">очков 💎</div></div>
+      <div class="res-stat"><div class="big" id="resPct">0%</div><div class="lbl">точность</div></div>
+    </div>
+
+    <div class="res-break" id="resBreak"></div>
+
+    <div class="ach-title">🎖️ Достижения:</div>
+    <div class="ach-grid" id="achGrid"></div>
+
+    <div class="descr-title">📋 Дескрипторы оценивания:</div>
+    <table class="descr-table">
+      <thead><tr><th>Уровень</th><th>Что показал ученик</th></tr></thead>
+      <tbody>
+        <tr data-lvl="master"><td>🏆 90–100%</td><td>Мастер ПО и ИИ — отлично классифицирует ПО, знает функции ИИ, решает сложные кейсы.</td></tr>
+        <tr data-lvl="confident"><td>🌟 75–89%</td><td>Уверенный пользователь — хорошо различает виды ПО, понимает работу ИИ.</td></tr>
+        <tr data-lvl="good"><td>👍 60–74%</td><td>Хороший старт — знает основные понятия, но путается в сложных заданиях.</td></tr>
+        <tr data-lvl="repeat"><td>📚 40–59%</td><td>Нужно повторить — допускает ошибки в базовых терминах, требуется повторение темы.</td></tr>
+        <tr data-lvl="weak"><td>💪 &lt;40%</td><td>Тема усвоена слабо — нужно ещё раз изучить материал урока.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="res-actions">
+      <button class="btn btn-green" id="againBtn">🔄 Играть снова</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ DEFEAT ══════════ -->
+<div class="screen" id="screen-defeat">
+  <div class="result-card">
+    <div class="res-top" id="defeatEmoji">💔</div>
+    <h2 class="res-title" id="defeatTitle">ИГРА ОКОНЧЕНА</h2>
+    <p class="res-sub" id="defeatReason">У тебя закончились жизни</p>
+    <div class="res-name" id="defeatName">—</div>
+    <div class="res-stats">
+      <div class="res-stat"><div class="big" id="defCorrect">0</div><div class="lbl">верных</div></div>
+      <div class="res-stat accent"><div class="big" id="defScore">0</div><div class="lbl">очков 💎</div></div>
+      <div class="res-stat"><div class="big" id="defTask">0</div><div class="lbl">заданий</div></div>
+    </div>
+    <div class="res-actions" style="margin-top:22px;">
+      <button class="btn btn-orange" id="retryBtn">💪 Ещё попытка</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════
+   ДАННЫЕ
+   ═══════════════════════════════════════════════ */
+const TASKS = [
+/* ══ БЛОК 1 · НОВИЧОК ══ */
+{block:1,type:'choice',q:'Что такое Программное Обеспечение (ПО)?',
+ options:['Физические детали компьютера','Совокупность всех программ для работы компьютера 💻','Инструкция по сборке ПК','Провод для подключения к интернету'],
+ correct:1,hint:'ПО — это «софт», программы. Их нельзя потрогать руками.'},
+
+{block:1,type:'tf',q:'Правда ли, что без программного обеспечения компьютер не сможет выполнять никакие задачи?',
+ correct:true,hint:'Без программ компьютер — просто набор железок.'},
+
+{block:1,type:'choice',q:'На какие 3 главные группы делится программное обеспечение?',
+ options:['Компьютерное, телефонное, планшетное','Системное, прикладное, инструментальное 🛠️','Игровое, учебное, рабочее','Быстрое, среднее, медленное'],
+ correct:1,hint:'Системное — управляет ПК. Прикладное — для задач. Инструментальное — для создания программ.'},
+
+{block:1,type:'tf',q:'Графический редактор Paint — это системная программа.',
+ correct:false,hint:'Paint — прикладное ПО, потому что помогает рисовать.'},
+
+{block:1,type:'matching',q:'Соотнеси программы с их видом:',
+ pairs:[{left:'Windows 11',right:'Системное ПО ⚙️'},{left:'MS Word',right:'Прикладное ПО 📝'}],
+ hint:'Windows — операционная система. Word — для текста.'},
+
+{block:1,type:'choice',q:'Какой инструмент позволяет писать программы и создавать свои игры?',
+ options:['Текстовый блокнот','Браузер','Инструментальное ПО (Scratch / Python) 🐍','Антивирус'],
+ correct:2,hint:'Инструментальное ПО — «инструменты» программиста.'},
+
+{block:1,type:'tf',q:'Искусственный интеллект (ИИ) — это технология, позволяющая программам учиться и анализировать данные.',
+ correct:true,hint:'Главное свойство ИИ — учиться на примерах.'},
+
+{block:1,type:'choice',q:'Что из этого является примером голосового ассистента с ИИ?',
+ options:['Калькулятор','Алиса / Siri 🎙️','Блокнот','Проводник файлов'],
+ correct:1,hint:'Алиса и Siri понимают речь — это ИИ.'},
+
+{block:1,type:'matching',q:'Соотнеси ИИ-функцию с её примером:',
+ pairs:[{left:'Автопереводчик',right:'Перевод текста по фото 📷'},{left:'Генератор картинок',right:'Рисование по текстовому описанию 🎨'}],
+ hint:'Оба примера — это ИИ-технологии.'},
+
+{block:1,type:'choice',q:'👑 БОСС: Что из перечисленного НЕ является программным обеспечением?',
+ options:['Операционная система Windows','Графический редактор Paint','Процессор Intel Core i5 💻','Антивирус Kaspersky'],
+ correct:2,boss:true,
+ hint:'Процессор — это «железо», его можно потрогать.'},
+
+/* ══ БЛОК 2 · ЗНАТОК ══ */
+{block:2,type:'category',q:'Распредели программы по 3 корзинам:',
+ baskets:['Системное','Прикладное','Инструментальное'],
+ items:[{text:'Android 📱',b:0},{text:'Linux 🐧',b:0},{text:'Google Chrome 🌐',b:1},
+        {text:'Photoshop 🖼️',b:1},{text:'Среда Scratch 🐱',b:2},{text:'Python IDLE 🐍',b:2}],
+ hint:'Системное — ОС. Прикладное — для пользователя. Инструментальное — для программиста.'},
+
+{block:2,type:'choice',q:'Какая программа относится к СИСТЕМНОМУ ПО и защищает ПК от угроз?',
+ options:['MS Excel','Антивирус 🛡️','Яндекс Браузер','Paint'],
+ correct:1,hint:'Антивирус — это защитная системная программа.'},
+
+{block:2,type:'tf',q:'Программисты используют прикладное ПО для создания новых приложений.',
+ correct:false,hint:'Программисты используют ИНСТРУМЕНТАЛЬНОЕ ПО.'},
+
+{block:2,type:'matching',q:'Соедини программу и её назначение:',
+ pairs:[{left:'Драйвер видеокарты',right:'Управление железом ПК 🔌'},
+        {left:'Игра Minecraft',right:'Развлечение 🎮'},
+        {left:'Среда Python',right:'Написание кода 💻'}],
+ hint:'Драйвер — системное. Игра — прикладное. Python — инструментальное.'},
+
+{block:2,type:'category',q:'Классифицируй: «Обычное ПО» vs «ПО с ИИ»:',
+ baskets:['Обычное ПО','ПО с ИИ'],
+ items:[{text:'Печать текста 📄',b:0},{text:'Сохранение файла 💾',b:0},
+        {text:'Распознавание лиц 👤',b:1},{text:'Подбор музыки 🎵',b:1}],
+ hint:'ИИ — там, где программа «понимает» и «узнаёт».'},
+
+{block:2,type:'choice',q:'В чём главное отличие программы с ИИ от обычного ПО?',
+ options:['Занимает меньше места','Способна обучаться на данных и адаптироваться 🧠','Работает без электричества','Всегда платная'],
+ correct:1,hint:'Обучение на данных — главное свойство ИИ.'},
+
+{block:2,type:'tf',q:'Умная камера смартфона, определяющая возраст и улыбку — использует ИИ.',
+ correct:true,hint:'Распознавание лиц и эмоций — это ИИ.'},
+
+{block:2,type:'order',q:'Расставь этапы запуска прикладной программы на ПК:',
+ items:['Включение ПК и загрузка ОС ⚙️','Открытие рабочего стола 🖥️',
+        'Запуск программы (например, Paint) 🎨','Создание и сохранение рисунка 💾'],
+ hint:'Сначала ОС, потом рабочий стол, потом программа, потом работа.'},
+
+{block:2,type:'choice',q:'К какому виду ПО относится операционная система iOS на iPhone?',
+ options:['Системное ПО 📲','Прикладное ПО','Инструментальное ПО','Игровое ПО'],
+ correct:0,hint:'iOS — это операционная система, значит системное ПО.'},
+
+{block:2,type:'choice',q:'👑 БОСС: Какой набор ПО правильно упорядочен от «самого нижнего» уровня к «верхнему»?',
+ options:['Прикладное → Системное → Инструментальное',
+          'Системное → Прикладное → Инструментальное',
+          'Системное → Инструментальное → Прикладное',
+          'Инструментальное → Прикладное → Системное'],
+ correct:1,boss:true,
+ hint:'Системное — фундамент (ОС). Затем инструменты программиста. Потом приложения пользователя.'},
+
+/* ══ БЛОК 3 · ЭКСПЕРТ ══ */
+{block:3,type:'category',q:'Распредели жизненные ситуации по видам ПО:',
+ baskets:['Системное','Прикладное','Инструментальное'],
+ items:[{text:'Настройка драйвера принтера 🪟',b:0},{text:'Проверка диска 🛠️',b:0},
+        {text:'Монтаж видеоролика 🎬',b:1},{text:'Расчёт таблицы 📊',b:1},
+        {text:'Скрипт на C++ 💻',b:2},{text:'Спрайт в Scratch 👾',b:2}],
+ hint:'Драйверы и проверка диска — системное. Монтаж и таблицы — прикладное. Код — инструментальное.'},
+
+{block:3,type:'choice',q:'Айдар хочет перевести голосовую речь с казахского на английский в реальном времени. Какое ПО ему поможет?',
+ options:['Обычный текстовый редактор','Системный архиватор','Приложение-переводчик с ИИ 🌐','Среда программирования'],
+ correct:2,hint:'Для перевода речи нужен ИИ-переводчик.'},
+
+{block:3,type:'tf',q:'Генерация уникального текста чат-ботом — это пример работы инструментального ПО без ИИ.',
+ correct:false,hint:'Чат-бот с генерацией — это прикладное ПО с генеративным ИИ.'},
+
+{block:3,type:'order',q:'Собери цепочку создания игры с ИИ:',
+ items:['Запустить Инструментальное ПО 🛠️','Написать алгоритм движения 🕹️',
+        'Подключить модуль ИИ 🧠','Сохранить и протестировать 🏆'],
+ hint:'Сначала среда, потом код, потом ИИ, потом тест.'},
+
+{block:3,type:'choice',q:'Если на компьютере не установлена ОС, сможем ли мы запустить браузер?',
+ options:['Да, браузер работает сам','Нет, прикладное ПО работает только поверх системного ⛔','Да, если подключить мышку','Да, если есть интернет'],
+ correct:1,hint:'Прикладные программы запускаются только внутри ОС.'},
+
+{block:3,type:'matching',q:'Соотнеси тип ПО и роль человека:',
+ pairs:[{left:'Пользователь',right:'Работает в Прикладном ПО 👨‍💻'},
+        {left:'Программист',right:'Работает в Инструментальном ПО 👩‍💻'},
+        {left:'Сисадмин',right:'Настраивает Системное ПО ⚙️'}],
+ hint:'Каждый работает со своим видом ПО.'},
+
+{block:3,type:'category',q:'Распредели примеры по наличию ИИ:',
+ baskets:['Приложение с ИИ','Без ИИ'],
+ items:[{text:'Автогенерация субтитров 📺',b:0},{text:'T9 подсказчик 📲',b:0},
+        {text:'Электронные часы ⏰',b:1},{text:'Стандартный калькулятор 🔢',b:1}],
+ hint:'ИИ — там, где есть обучение и анализ данных.'},
+
+{block:3,type:'choice',q:'Что делает нейросеть при распознавании кошки на фотографии?',
+ options:['Ищет файл с названием «кошка»','Анализирует миллионы пикселей и сравнивает с обученной базой образцов 🐱','Спрашивает у пользователя','Перезагружает ПК'],
+ correct:1,hint:'Нейросеть работает с пикселями и обученной моделью.'},
+
+{block:3,type:'order',q:'Порядок разработки новой программы учеником:',
+ items:['Идея и выбор ПО 💡','Написание кода ✍️',
+        'Поиск и исправление ошибок 🔍','Публикация ПО 🚀'],
+ hint:'Идея → код → отладка → публикация.'},
+
+{block:3,type:'choice',q:'👑 ФИНАЛЬНЫЙ БОСС: Какое утверждение о ИИ и ПО является ЛОЖНЫМ?',
+ options:['ИИ помогает человеку быстрее решать задачи',
+          'Нейросети обучаются на большом количестве примеров',
+          'ИИ полностью заменяет программиста и создаёт ОС без человека 🚫',
+          'ИИ используется в голосовых помощниках и камерах'],
+ correct:2,boss:true,
+ hint:'ИИ — инструмент в руках человека, а не замена ему.'}
+];
+
+/* ═══════════════════════════════════════════════
+   СОСТОЯНИЕ (10 жизней, 25 минут, один уровень)
+   ═══════════════════════════════════════════════ */
+const S = {
+  name:'',
+  lives:10, maxLives:10,
+  timeLeft:1500, timeTotal:1500,
+  score:0, streak:0, correctCount:0,
+  idx:0, answered:false,
+  results:[], soundOn:true,
+  unlockedAch:{},
+  selOpt:null, matchState:null, catState:null, orderState:null,
+  qStartTime:0,
+  blockErrors:{1:0,2:0,3:0},
+  maxStreak:0,
+  powerups:{hint:3, freeze:1, double:2, skip:1},
+  doubleActive:false,
+  frozen:false, freezeTimer:null
+};
+
+const BASE_POINTS = {1:100, 2:200, 3:300};
+const BOSS_MULT = 2;
+
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+const shuffle = a => {const b=a.slice();for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;};
+const fmtTime = s => {
+  const m=Math.floor(s/60), sec=s%60;
+  return (m<10?'0':'')+m+':'+(sec<10?'0':'')+sec;
+};
+
+/* ═══════════════════════════════════════════════
+   ДОСТИЖЕНИЯ
+   ═══════════════════════════════════════════════ */
+const ACHIEVEMENTS = [
+  {id:'sniper',  em:'🎯', name:'Снайпер',      desc:'5 верных подряд'},
+  {id:'armor',   em:'🛡️', name:'Броня',        desc:'Блок без ошибок'},
+  {id:'lightning',em:'⚡', name:'Молния',       desc:'Ответ < 5 сек'},
+  {id:'knower',  em:'🧠', name:'Знаток ПО',    desc:'100% в Блоке 1'},
+  {id:'aifriend',em:'🤖', name:'Друг ИИ',      desc:'100% в Блоке 2'},
+  {id:'expert',  em:'🏅', name:'Эксперт',      desc:'100% в Блоке 3'},
+  {id:'master',  em:'🏆', name:'Мастер',       desc:'≥90% в игре'},
+  {id:'combo',   em:'🔥', name:'Комбо-мастер', desc:'Стрик x5'},
+  {id:'boss',    em:'👑', name:'Убийца боссов',desc:'3 босса без ошибок'},
+  {id:'poweruser',em:'💎',name:'Силач',        desc:'Использовать 3 усилителя'}
+];
+
+function loadAch(){ try{return JSON.parse(localStorage.getItem('ai_cyber_ach')||'{}');}catch(e){return{};} }
+function saveAch(a){ try{localStorage.setItem('ai_cyber_ach',JSON.stringify(a));}catch(e){} }
+function unlockAch(id){
+  if(S.unlockedAch[id]) return;
+  S.unlockedAch[id] = true;
+  const all = loadAch(); all[id]=true; saveAch(all);
+  const a = ACHIEVEMENTS.find(x=>x.id===id);
+  if(a) showToast(a.em + ' Достижение: ' + a.name + '!');
+}
+function showToast(text){
+  const t = document.createElement('div');
+  t.className='toast'; t.textContent=text;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),3400);
+}
+
+/* ═══════════════════════════════════════════════
+   ЗВУК
+   ═══════════════════════════════════════════════ */
+let audioCtx=null;
+function beep(freq,dur,when=0,type='sine'){
+  if(!S.soundOn) return;
+  try{
+    if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+    o.type=type; o.frequency.value=freq; o.connect(g); g.connect(audioCtx.destination);
+    const t0=audioCtx.currentTime+when;
+    g.gain.setValueAtTime(0.0001,t0);
+    g.gain.exponentialRampToValueAtTime(0.18,t0+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
+    o.start(t0); o.stop(t0+dur+0.05);
+  }catch(e){}
+}
+function playVictory(){ beep(523,.18,0);beep(659,.18,.18);beep(784,.18,.36);beep(1046,.42,.54); }
+function playDefeat(){ beep(392,.28,0,'triangle');beep(261,.5,.28,'triangle'); }
+
+/* ═══════════════════════════════════════════════
+   ЭФФЕКТЫ
+   ═══════════════════════════════════════════════ */
+function confettiBurst(x,y){
+  const colors=['#00f5ff','#ff00e5','#a855f7','#22c55e','#ffd700','#ff9500','#ff3366'];
+  for(let i=0;i<24;i++){
+    const c=document.createElement('div');
+    c.className='confetti';
+    const ang=(Math.PI*2*i)/24;
+    const dist=60+Math.random()*120;
+    c.style.setProperty('--tx',Math.cos(ang)*dist+'px');
+    c.style.setProperty('--ty',Math.sin(ang)*dist+'px');
+    c.style.background=colors[i%colors.length];
+    c.style.left=x+'px'; c.style.top=y+'px';
+    c.style.boxShadow='0 0 8px '+colors[i%colors.length];
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(),1300);
+  }
+}
+function shakeScreen(){
+  document.body.classList.remove('shake');
+  void document.body.offsetWidth;
+  document.body.classList.add('shake');
+  setTimeout(()=>document.body.classList.remove('shake'),600);
+}
+function floatScore(text){
+  const el=document.createElement('div');
+  el.className='float-score'; el.textContent=text;
+  el.style.left=(window.innerWidth/2-40)+'px';
+  el.style.top=(window.innerHeight/2)+'px';
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),1200);
+}
+function floatDmg(text){
+  const el=document.createElement('div');
+  el.className='dmg-float'; el.textContent=text;
+  el.style.left=(window.innerWidth/2-40)+'px';
+  el.style.top=(window.innerHeight/2)+'px';
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),1200);
+}
+
+/* ═══════════════════════════════════════════════
+   СТАРТ
+   ═══════════════════════════════════════════════ */
+const nameInput=$('#nameInput'), startBtn=$('#startBtn'), nameHint=$('#nameHint');
+
+nameInput.addEventListener('input',()=>{
+  const v=nameInput.value.trim();
+  if(v.length>=2){
+    startBtn.disabled=false;
+    nameHint.textContent='Отлично! Можно начинать 👍';
+    nameHint.classList.add('ok');
+  } else {
+    startBtn.disabled=true;
+    nameHint.textContent='Введи минимум 2 символа, чтобы начать';
+    nameHint.classList.remove('ok');
+  }
+});
+
+startBtn.addEventListener('click', startGame);
+$('#againBtn').addEventListener('click', resetToStart);
+$('#retryBtn').addEventListener('click', ()=>startGame(true));
+$('#soundBtn').addEventListener('click', ()=>{
+  S.soundOn=!S.soundOn;
+  $('#soundBtn').textContent=S.soundOn?'🔊':'🔇';
+});
+
+function resetToStart(){
+  nameInput.value='';
+  startBtn.disabled=true;
+  nameHint.textContent='Введи минимум 2 символа, чтобы начать';
+  nameHint.classList.remove('ok');
+  showScreen('screen-start');
+  nameInput.focus();
+}
+
+function startGame(keepName){
+  if(!keepName){
+    const v=nameInput.value.trim();
+    if(v.length<2) return;
+    S.name=v;
+  }
+  S.lives=10; S.maxLives=10;
+  S.timeTotal=1500; S.timeLeft=1500;   // 25 минут
+  S.score=0; S.streak=0; S.correctCount=0;
+  S.idx=0; S.answered=false;
+  S.results=new Array(TASKS.length).fill(null);
+  S.unlockedAch=loadAch();
+  S.selOpt=null; S.matchState=null; S.catState=null; S.orderState=null;
+  S.blockErrors={1:0,2:0,3:0};
+  S.maxStreak=0;
+  S.powerups={hint:3, freeze:1, double:2, skip:1};
+  S.doubleActive=false;
+  S.frozen=false;
+  if(S.freezeTimer){clearInterval(S.freezeTimer);S.freezeTimer=null;}
+
+  $('#soundBtn').textContent=S.soundOn?'🔊':'🔇';
+  showScreen('screen-game');
+  renderHUD();
+  renderTask();
+  startTimer();
+  updatePowerUI();
+}
+
+function showScreen(id){
+  $$('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+/* ═══════════════════════════════════════════════
+   ТАЙМЕР
+   ═══════════════════════════════════════════════ */
+let timerInt=null;
+function startTimer(){
+  clearInterval(timerInt);
+  updateTimerUI();
+  timerInt=setInterval(()=>{
+    if(S.frozen) return;
+    S.timeLeft--;
+    updateTimerUI();
+    if(S.timeLeft<=0){
+      clearInterval(timerInt);
+      endGame('time');
+    }
+  },1000);
+}
+function updateTimerUI(){
+  $('#timerVal').textContent=fmtTime(Math.max(0,S.timeLeft));
+  $('#timerBox').classList.toggle('warn', S.timeLeft<=60 && !S.frozen);
+  $('#timerBox').classList.toggle('frozen', S.frozen);
+}
+
+/* ═══════════════════════════════════════════════
+   HUD
+   ═══════════════════════════════════════════════ */
+function renderHUD(){
+  let hearts='';
+  for(let i=0;i<S.maxLives;i++){
+    hearts+='<span class="heart'+(i<S.lives?'':' dead')+'">❤️</span>';
+  }
+  $('#livesBox').innerHTML=hearts;
+  $('#livesBox').classList.toggle('low', S.lives<=3);
+
+  $('#scoreBox').textContent=S.score;
+
+  const mult=streakMult(S.streak);
+  $('#streakVal').textContent='x'+mult;
+  const sb=$('#streakBox');
+  sb.classList.toggle('hot', S.streak>=3);
+  sb.classList.toggle('cold', S.streak<3);
+  if(S.streak>=3){
+    sb.innerHTML='<span class="fire">🔥</span> <span id="streakVal">x'+mult+'</span>';
+  } else {
+    sb.innerHTML='🔥 <span id="streakVal">x'+mult+'</span>';
+  }
+
+  const b=TASKS[S.idx]?TASKS[S.idx].block:1;
+  const bp=$('#blockPill');
+  bp.textContent='🏝️ Блок '+b;
+  bp.className='block-pill'+(b===2?' b2':b===3?' b3':'');
+
+  $('#progFill').style.width=(S.idx/TASKS.length*100)+'%';
+}
+
+function streakMult(streak){
+  if(streak>=7) return 5;
+  if(streak>=5) return 3;
+  if(streak>=3) return 2;
+  return 1;
+}
+
+/* ═══════════════════════════════════════════════
+   POWER-UPS
+   ═══════════════════════════════════════════════ */
+function updatePowerUI(){
+  $('#pwHintCnt').textContent=S.powerups.hint;
+  $('#pwFreezeCnt').textContent=S.powerups.freeze;
+  $('#pwDoubleCnt').textContent=S.powerups.double;
+  $('#pwSkipCnt').textContent=S.powerups.skip;
+  $('#pwHint').disabled = S.powerups.hint<=0 || S.answered;
+  $('#pwFreeze').disabled = S.powerups.freeze<=0 || S.answered || S.frozen;
+  $('#pwDouble').disabled = S.powerups.double<=0 || S.answered || S.doubleActive;
+  $('#pwSkip').disabled = S.powerups.skip<=0 || S.answered;
+  $('#pwDouble').classList.toggle('active', S.doubleActive);
+}
+
+$('#pwHint').addEventListener('click',()=>{
+  if(S.powerups.hint<=0 || S.answered) return;
+  const t=TASKS[S.idx];
+  if(t.type!=='choice' && t.type!=='tf'){ showToast('💡 50/50 только для тестовых вопросов'); return; }
+  S.powerups.hint--;
+  usePower();
+  const opts=$$('#answerArea .opt');
+  let wrongIdxs=[];
+  if(t.type==='choice'){
+    opts.forEach((el,i)=>{ if(i!==t.correct) wrongIdxs.push(i); });
+  } else {
+    const vals=[true,false];
+    opts.forEach((el,i)=>{ if(vals[i]!==t.correct) wrongIdxs.push(i); });
+  }
+  const removed=shuffle(wrongIdxs).slice(0,2);
+  removed.forEach(i=>opts[i]&&opts[i].classList.add('eliminated'));
+  updatePowerUI();
+});
+
+$('#pwFreeze').addEventListener('click',()=>{
+  if(S.powerups.freeze<=0 || S.answered || S.frozen) return;
+  S.powerups.freeze--;
+  S.frozen=true;
+  usePower();
+  updateTimerUI(); updatePowerUI();
+  showToast('❄️ Таймер заморожен на 30 секунд!');
+  let left=30;
+  if(S.freezeTimer) clearInterval(S.freezeTimer);
+  S.freezeTimer=setInterval(()=>{
+    left--;
+    if(left<=0){
+      clearInterval(S.freezeTimer); S.freezeTimer=null;
+      S.frozen=false; updateTimerUI(); updatePowerUI();
+      showToast('⏱️ Время снова пошло!');
+    }
+  },1000);
+});
+
+$('#pwDouble').addEventListener('click',()=>{
+  if(S.powerups.double<=0 || S.answered || S.doubleActive) return;
+  S.powerups.double--;
+  S.doubleActive=true;
+  usePower();
+  updatePowerUI();
+  showToast('⚡ Двойной удар! Следующий правильный ответ даст 2x очков');
+});
+
+$('#pwSkip').addEventListener('click',()=>{
+  if(S.powerups.skip<=0 || S.answered) return;
+  S.powerups.skip--;
+  usePower();
+  S.answered=true;
+  S.results[S.idx]=null;
+  updatePowerUI();
+  showToast('⏭️ Задание пропущено');
+  $('#checkBtn').classList.add('hidden');
+  $('#nextBtn').classList.remove('hidden');
+  const fb=$('#feedback');
+  fb.className='feedback';
+  fb.style.background='rgba(0,245,255,.1)';
+  fb.style.borderLeft='4px solid var(--cyan)';
+  fb.innerHTML='<div class="fb-title">⏭️ Пропущено</div><div>Задание пропущено без потери жизни</div>';
+});
+
+function usePower(){
+  const used = (3 - S.powerups.hint) + (1 - S.powerups.freeze) + (2 - S.powerups.double) + (1 - S.powerups.skip);
+  if(used >= 3) unlockAch('poweruser');
+}
+
+/* ═══════════════════════════════════════════════
+   РЕНДЕР ЗАДАНИЯ
+   ═══════════════════════════════════════════════ */
+function renderTask(){
+  const t=TASKS[S.idx];
+  S.answered=false;
+  S.selOpt=null; S.matchState=null; S.catState=null; S.orderState=null;
+  S.qStartTime=Date.now();
+
+  renderHUD();
+  updatePowerUI();
+
+  $('#taskNum').textContent=S.idx+1;
+  $('#taskQ').textContent=t.q;
+
+  $('#taskCard').classList.toggle('boss', !!t.boss);
+
+  const fb=$('#feedback');
+  fb.className='feedback hidden'; fb.innerHTML='';
+  fb.style.background=''; fb.style.borderLeft='';
+
+  $('#checkBtn').classList.remove('hidden');
+  $('#checkBtn').disabled=false;
+  $('#nextBtn').classList.add('hidden');
+  $('#nextBtn').textContent=(S.idx===TASKS.length-1)?'🏁 ФИНИШ':'Далее →';
+
+  const area=$('#answerArea');
+  area.innerHTML='';
+
+  if(t.type==='choice')      setupChoice(t);
+  else if(t.type==='tf')     setupTF(t);
+  else if(t.type==='matching') setupMatch(t);
+  else if(t.type==='category') setupCategory(t);
+  else if(t.type==='order')  setupOrder(t);
+}
+
+function setupChoice(t){
+  const area=$('#answerArea');
+  area.className='answers';
+  const letters=['А','Б','В','Г'];
+  t.options.forEach((opt,i)=>{
+    const b=document.createElement('button');
+    b.className='opt';
+    b.innerHTML='<span class="mk">'+letters[i]+'</span><span>'+opt+'</span>';
+    b.addEventListener('click',()=>{
+      if(S.answered) return;
+      S.selOpt=i;
+      area.querySelectorAll('.opt').forEach((e,j)=>e.classList.toggle('selected', j===i));
+    });
+    area.appendChild(b);
+  });
+}
+
+function setupTF(t){
+  const area=$('#answerArea');
+  area.className='';
+  const wrap=document.createElement('div');
+  wrap.className='tf-grid';
+  [['Верно','✔',true],['Неверно','✘',false]].forEach(([lbl,sign,val])=>{
+    const b=document.createElement('button');
+    b.className='opt';
+    b.innerHTML='<span class="mk">'+sign+'</span><span>'+lbl+'</span>';
+    b.addEventListener('click',()=>{
+      if(S.answered) return;
+      S.selOpt=val;
+      wrap.querySelectorAll('.opt').forEach(e=>e.classList.remove('selected'));
+      b.classList.add('selected');
+    });
+    wrap.appendChild(b);
+  });
+  area.appendChild(wrap);
+}
+
+function setupMatch(t){
+  S.matchState={
+    left:t.pairs.map(p=>p.left),
+    right:shuffle(t.pairs.map((p,i)=>({text:p.right,pi:i}))),
+    assign:{}, sel:null
+  };
+  const area=$('#answerArea');
+  const letters=['А','Б','В','Г','Д','Е'];
+  let html='<div class="match-grid"><div class="match-col">';
+  S.matchState.left.forEach((term,i)=>{
+    html+='<button class="mi" data-side="left" data-idx="'+i+'"><span class="mb">?</span><span>'+term+'</span></button>';
+  });
+  html+='</div><div class="match-col">';
+  S.matchState.right.forEach((d,i)=>{
+    html+='<button class="mi" data-side="right" data-idx="'+i+'"><span class="mb">'+letters[i]+'</span><span>'+d.text+'</span></button>';
+  });
+  html+='</div></div>';
+  area.innerHTML=html;
+  area.querySelectorAll('.mi').forEach(el=>{
+    el.addEventListener('click',()=>handleMatchClick(el.dataset.side,+el.dataset.idx));
+  });
+}
+
+function handleMatchClick(side,idx){
+  if(S.answered) return;
+  const ms=S.matchState;
+  if(side==='left' && ms.assign[idx]!==undefined) delete ms.assign[idx];
+  if(side==='right'){for(const k in ms.assign) if(ms.assign[k]===idx) delete ms.assign[k];}
+  if(ms.sel && ms.sel.side!==side){
+    if(side==='left') ms.assign[idx]=ms.sel.idx;
+    else ms.assign[ms.sel.idx]=idx;
+    ms.sel=null;
+  } else if(ms.sel && ms.sel.side===side && ms.sel.idx===idx){
+    ms.sel=null;
+  } else {
+    ms.sel={side,idx};
+  }
+  updateMatchUI();
+}
+
+function updateMatchUI(){
+  const ms=S.matchState;
+  const area=$('#answerArea');
+  const letters=['А','Б','В','Г','Д','Е'];
+  area.querySelectorAll('.mi').forEach(el=>el.classList.remove('selected','paired','correct','wrong'));
+  area.querySelectorAll('[data-side="left"]').forEach(el=>{
+    const i=+el.dataset.idx;
+    const badge=el.querySelector('.mb');
+    if(ms.assign[i]!==undefined){badge.textContent=letters[ms.assign[i]];el.classList.add('paired');}
+    else badge.textContent='?';
+  });
+  area.querySelectorAll('[data-side="right"]').forEach(el=>{
+    const i=+el.dataset.idx;
+    if(Object.values(ms.assign).includes(i)) el.classList.add('paired');
+  });
+  if(ms.sel){
+    const el=area.querySelector('[data-side="'+ms.sel.side+'"][data-idx="'+ms.sel.idx+'"]');
+    if(el) el.classList.add('selected');
+  }
+}
+
+function setupCategory(t){
+  S.catState={place:t.items.map(()=>null),sel:null};
+  const nb=t.baskets.length;
+  const area=$('#answerArea');
+  let html='<div class="pool" id="pool"><div class="pool-lbl">👇 Нажми карточку, затем корзину (или перетащи):</div><div class="pool-items" id="poolItems"></div></div>';
+  html+='<div class="basket-grid" style="grid-template-columns:repeat('+nb+',1fr)">';
+  t.baskets.forEach((b,bi)=>{
+    html+='<div class="basket" data-b="'+bi+'"><h4>'+b+'</h4><div class="items" data-basket-items="'+bi+'"></div></div>';
+  });
+  html+='</div>';
+  area.innerHTML=html;
+
+  const pool=$('#pool');
+  pool.addEventListener('dragover',e=>{e.preventDefault();pool.classList.add('over');});
+  pool.addEventListener('dragleave',()=>pool.classList.remove('over'));
+  pool.addEventListener('drop',e=>{
+    e.preventDefault();pool.classList.remove('over');
+    if(S.answered) return;
+    const i=+e.dataTransfer.getData('text/plain');
+    if(!isNaN(i)){S.catState.place[i]=null;S.catState.sel=null;paintCat();}
+  });
+  pool.addEventListener('click',()=>{
+    if(S.answered) return;
+    if(S.catState.sel!==null){S.catState.place[S.catState.sel]=null;S.catState.sel=null;paintCat();}
+  });
+  area.querySelectorAll('.basket').forEach(b=>{
+    b.addEventListener('dragover',e=>{e.preventDefault();b.classList.add('over');});
+    b.addEventListener('dragleave',()=>b.classList.remove('over'));
+    b.addEventListener('drop',e=>{
+      e.preventDefault();b.classList.remove('over');
+      if(S.answered) return;
+      const i=+e.dataTransfer.getData('text/plain');
+      if(!isNaN(i)){S.catState.place[i]=+b.dataset.b;S.catState.sel=null;paintCat();}
+    });
+    b.addEventListener('click',()=>{
+      if(S.answered) return;
+      if(S.catState.sel!==null){S.catState.place[S.catState.sel]=+b.dataset.b;S.catState.sel=null;paintCat();}
+    });
+  });
+  paintCat();
+}
+
+function paintCat(){
+  const t=TASKS[S.idx];
+  const cs=S.catState;
+  const poolItems=document.getElementById('poolItems');
+  poolItems.innerHTML='';
+  t.baskets.forEach((_,bi)=>{
+    const c=document.querySelector('[data-basket-items="'+bi+'"]');
+    if(c) c.innerHTML='';
+  });
+  t.items.forEach((it,i)=>{
+    const chip=document.createElement('div');
+    chip.className='chip'+(cs.sel===i?' selected':'');
+    chip.textContent=it.text;
+    chip.draggable=true;
+    chip.dataset.item=i;
+    chip.addEventListener('click',e=>{
+      e.stopPropagation();
+      if(S.answered) return;
+      cs.sel=(cs.sel===i)?null:i;
+      paintCat();
+    });
+    chip.addEventListener('dragstart',e=>{
+      if(S.answered){e.preventDefault();return;}
+      cs.sel=i;
+      e.dataTransfer.setData('text/plain',String(i));
+    });
+    if(cs.place[i]===null) poolItems.appendChild(chip);
+    else{
+      const dest=document.querySelector('[data-basket-items="'+cs.place[i]+'"]');
+      if(dest) dest.appendChild(chip);
+    }
+  });
+}
+
+function setupOrder(t){
+  S.orderState={
+    pool:shuffle(t.items.map((text,i)=>({text,i}))),
+    seq:[]
+  };
+  const area=$('#answerArea');
+  area.innerHTML=
+    '<div class="order-wrap">'+
+      '<div><div class="col-title">📋 Шаги (нажми, чтобы добавить):</div><div class="order-pool" id="orderPool"></div></div>'+
+      '<div><div class="col-title">✅ Твой порядок:</div><div class="order-seq" id="orderSeq"></div></div>'+
+    '</div>';
+  paintOrder();
+}
+
+function paintOrder(){
+  const pool=document.getElementById('orderPool');
+  const seq=document.getElementById('orderSeq');
+  pool.innerHTML=''; seq.innerHTML='';
+  S.orderState.pool.slice().forEach(it=>{
+    const c=document.createElement('div');
+    c.className='chip'; c.textContent=it.text;
+    c.addEventListener('click',()=>{
+      if(S.answered) return;
+      S.orderState.pool.splice(S.orderState.pool.indexOf(it),1);
+      S.orderState.seq.push(it);
+      paintOrder();
+    });
+    pool.appendChild(c);
+  });
+  S.orderState.seq.forEach((it,k)=>{
+    const c=document.createElement('div');
+    c.className='chip seq-chip';
+    c.innerHTML='<span class="seq-num">'+(k+1)+'</span><span>'+it.text+'</span>';
+    c.addEventListener('click',()=>{
+      if(S.answered) return;
+      S.orderState.seq.splice(S.orderState.seq.indexOf(it),1);
+      S.orderState.pool.push(it);
+      paintOrder();
+    });
+    seq.appendChild(c);
+  });
+  if(S.orderState.pool.length===0) pool.innerHTML='<div class="empty-note">Все шаги использованы</div>';
+  if(S.orderState.seq.length===0)  seq.innerHTML='<div class="empty-note">Нажми на шаг слева</div>';
+}
+
+/* ═══════════════════════════════════════════════
+   ПРОВЕРКА
+   ═══════════════════════════════════════════════ */
+$('#checkBtn').addEventListener('click', checkAnswer);
+
+function checkAnswer(){
+  if(S.answered) return;
+  const t=TASKS[S.idx];
+  let ok=false, note='';
+
+  if(t.type==='choice' || t.type==='tf'){
+    if(S.selOpt===null){ nudge(); return; }
+    const opts=$('#answerArea').querySelectorAll('.opt');
+    if(t.type==='choice'){
+      ok=(S.selOpt===t.correct);
+      opts.forEach((el,i)=>{
+        el.classList.remove('selected');
+        if(i===t.correct) el.classList.add('correct');
+        else if(i===S.selOpt) el.classList.add('wrong');
+      });
+      if(!ok) note='Верно: <b>'+t.options[t.correct]+'</b>';
+    } else {
+      ok=(S.selOpt===t.correct);
+      const vals=[true,false];
+      opts.forEach((el,i)=>{
+        el.classList.remove('selected');
+        if(vals[i]===t.correct) el.classList.add('correct');
+        else if(vals[i]===S.selOpt) el.classList.add('wrong');
+      });
+      if(!ok) note='Верно: <b>'+(t.correct?'Верно':'Неверно')+'</b>';
+    }
+  }
+  else if(t.type==='matching'){
+    if(Object.keys(S.matchState.assign).length<t.pairs.length){ nudge(); return; }
+    ok=true;
+    for(let i=0;i<t.pairs.length;i++){
+      const a=S.matchState.assign[i];
+      if(a===undefined || S.matchState.right[a].pi!==i) ok=false;
+    }
+    const area=$('#answerArea');
+    area.querySelectorAll('[data-side="left"]').forEach(el=>{
+      const i=+el.dataset.idx;
+      const a=S.matchState.assign[i];
+      el.classList.add((a!==undefined && S.matchState.right[a].pi===i)?'correct':'wrong');
+    });
+    area.querySelectorAll('[data-side="right"]').forEach(el=>{
+      const i=+el.dataset.idx;
+      let good=false;
+      for(const k in S.matchState.assign){
+        if(S.matchState.assign[k]===i && S.matchState.right[i].pi===+k) good=true;
+      }
+      el.classList.add(good?'correct':'wrong');
+    });
+    if(!ok) note='Верные пары: <b>'+t.pairs.map(p=>p.left+' → '+p.right).join('; ')+'</b>';
+  }
+  else if(t.type==='category'){
+    if(S.catState.place.some(p=>p===null)){ nudge(); return; }
+    ok=t.items.every((it,i)=>S.catState.place[i]===it.b);
+    $('#answerArea').querySelectorAll('.chip').forEach(ch=>{
+      const i=+ch.dataset.item;
+      ch.classList.add(S.catState.place[i]===t.items[i].b?'correct':'wrong');
+    });
+    if(!ok) note='Верно: <b>'+t.items.map(it=>it.text+' — '+t.baskets[it.b]).join('; ')+'</b>';
+  }
+  else if(t.type==='order'){
+    if(S.orderState.seq.length<t.items.length){ nudge(); return; }
+    ok=S.orderState.seq.every((it,k)=>it.i===k);
+    if(!ok) note='Порядок: <b>'+t.items.map((s,i)=>(i+1)+'. '+s).join(' → ')+'</b>';
+  }
+
+  S.answered=true;
+  S.results[S.idx]=ok;
+
+  const elapsed=(Date.now()-S.qStartTime)/1000;
+  let gained=0;
+
+  if(ok){
+    S.correctCount++;
+    S.streak++;
+    if(S.streak>S.maxStreak) S.maxStreak=S.streak;
+
+    const base=BASE_POINTS[t.block];
+    const speedBonus = elapsed<5?80 : elapsed<10?50 : elapsed<20?25 : 0;
+    const mult = streakMult(S.streak);
+    const bossMul = t.boss ? BOSS_MULT : 1;
+    const dblMul = S.doubleActive ? 2 : 1;
+    gained = Math.round((base+speedBonus) * mult * bossMul * dblMul);
+    S.score += gained;
+    if(S.doubleActive){ S.doubleActive=false; showToast('⚡ Двойной удар сработал!'); }
+
+    if(S.streak>=5) unlockAch('sniper');
+    if(elapsed<5) unlockAch('lightning');
+    if(streakMult(S.streak)>=5) unlockAch('combo');
+
+    floatScore('+' + gained + ' 💎');
+    confettiBurst(window.innerWidth/2, window.innerHeight/2);
+    $('#scoreBox').textContent=S.score;
+  } else {
+    S.lives--;
+    S.streak=0;
+    S.blockErrors[t.block]=(S.blockErrors[t.block]||0)+1;
+    floatDmg('−1 ❤️');
+    shakeScreen();
+  }
+  renderHUD();
+  updatePowerUI();
+
+  $('#checkBtn').classList.add('hidden');
+  $('#nextBtn').classList.remove('hidden');
+
+  const fb=$('#feedback');
+  fb.className='feedback '+(ok?'ok':'bad');
+  fb.style.background=''; fb.style.borderLeft='';
+  let html='<div class="fb-title">'+(ok?'✅ ВЕРНО! +'+gained+' 💎':'❌ ОШИБКА! −1 ❤️')+'</div>';
+  if(note) html+='<div>'+note+'</div>';
+  if(!ok && t.hint) html+='<div>💡 '+t.hint+'</div>';
+  fb.innerHTML=html;
+
+  if(S.lives<=0){ setTimeout(()=>endGame('lives'), 900); }
+}
+
+function nudge(){
+  const b=$('#checkBtn');
+  b.classList.remove('nudge'); void b.offsetWidth; b.classList.add('nudge');
+}
+
+/* ═══════════════════════════════════════════════
+   ДАЛЕЕ
+   ═══════════════════════════════════════════════ */
+$('#nextBtn').addEventListener('click', ()=>{
+  const curBlock=TASKS[S.idx].block;
+  const nextIdx=S.idx+1;
+  const nextBlock=nextIdx<TASKS.length?TASKS[nextIdx].block:null;
+
+  if(nextBlock!==null && nextBlock!==curBlock){
+    const errs=S.blockErrors[curBlock];
+    if(errs===0){
+      unlockAch('armor');
+      if(curBlock===1) unlockAch('knower');
+      if(curBlock===2) unlockAch('aifriend');
+      if(curBlock===3) unlockAch('expert');
+    }
+    showBlockOverlay(curBlock, nextBlock, ()=>{
+      S.idx=nextIdx;
+      renderTask();
+    });
+    return;
+  }
+
+  if(nextIdx>=TASKS.length){
+    if(S.blockErrors[3]===0) unlockAch('expert');
+    const bossIdx=[9,19,29];
+    const allBossOk=bossIdx.every(i=>S.results[i]===true);
+    if(allBossOk) unlockAch('boss');
+    endGame('win');
+    return;
+  }
+  S.idx=nextIdx;
+  renderTask();
+});
+
+function showBlockOverlay(done, next, cb){
+  const names={1:'🏝️ Блок 1 «НОВИЧОК»', 2:'🏝️ Блок 2 «ЗНАТОК»', 3:'🏝️ Блок 3 «ЭКСПЕРТ»'};
+  const ov=document.createElement('div');
+  ov.className='overlay';
+  ov.innerHTML=
+    '<div class="ov-card">'+
+      '<div class="em">🎉</div>'+
+      '<h3>'+names[done]+' ПРОЙДЕН!</h3>'+
+      '<p>Ошибок в блоке: <b>'+S.blockErrors[done]+'</b>. '+
+      'Очков: <b>'+S.score+'</b> 💎<br>'+
+      'Впереди — ' + names[next] + ', задания станут интереснее!</p>'+
+      '<button class="btn btn-primary" id="ovBtn">Перейти к Блоку '+next+' →</button>'+
+    '</div>';
+  document.body.appendChild(ov);
+  ov.querySelector('#ovBtn').addEventListener('click',()=>{ ov.remove(); cb(); });
+}
+
+/* ═══════════════════════════════════════════════
+   ФИНАЛ
+   ═══════════════════════════════════════════════ */
+function endGame(reason){
+  clearInterval(timerInt);
+  if(S.freezeTimer){clearInterval(S.freezeTimer);S.freezeTimer=null;}
+  if(reason==='win'){ playVictory(); showVictory(); }
+  else{ playDefeat(); showDefeat(reason); }
+}
+
+function showVictory(){
+  const correct=S.correctCount;
+  const pct=Math.round(correct/TASKS.length*100);
+
+  $('#resName').textContent=S.name;
+  $('#resCorrect').textContent=correct;
+  $('#resScore').textContent=S.score;
+  $('#resPct').textContent=pct+'%';
+
+  const b1=S.results.slice(0,10).filter(r=>r===true).length;
+  const b2=S.results.slice(10,20).filter(r=>r===true).length;
+  const b3=S.results.slice(20,30).filter(r=>r===true).length;
+  $('#resBreak').innerHTML=
+    '🏝️ Блок 1: <b>'+b1+'/10</b> · 🏝️ Блок 2: <b>'+b2+'/10</b> · 🏝️ Блок 3: <b>'+b3+'/10</b> · 🔥 макс. серия: <b>x'+S.maxStreak+'</b>';
+
+  if(pct>=90) unlockAch('master');
+
+  const all=loadAch();
+  const grid=$('#achGrid');
+  grid.innerHTML='';
+  ACHIEVEMENTS.forEach(a=>{
+    const got=!!all[a.id];
+    const el=document.createElement('div');
+    el.className='ach-item'+(got?' got':'');
+    el.innerHTML='<span class="ae">'+a.em+'</span><b>'+a.name+'</b><br>'+a.desc;
+    grid.appendChild(el);
+  });
+
+  if(pct>=90){ $('#resTop').textContent='🏆'; $('#resTitle').textContent='МАСТЕР!'; }
+  else if(pct>=75){ $('#resTop').textContent='🌟'; $('#resTitle').textContent='ОТЛИЧНО!'; }
+  else if(pct>=60){ $('#resTop').textContent='👍'; $('#resTitle').textContent='ХОРОШО!'; }
+  else if(pct>=40){ $('#resTop').textContent='📚'; $('#resTitle').textContent='НЕПЛОХО'; }
+  else { $('#resTop').textContent='💪'; $('#resTitle').textContent='НУЖНО ПОВТОРИТЬ'; }
+
+  $$('.descr-table tr').forEach(tr=>tr.classList.remove('active'));
+  let lvl='weak';
+  if(pct>=90) lvl='master';
+  else if(pct>=75) lvl='confident';
+  else if(pct>=60) lvl='good';
+  else if(pct>=40) lvl='repeat';
+  const row=document.querySelector('.descr-table tr[data-lvl="'+lvl+'"]');
+  if(row) row.classList.add('active');
+
+  showScreen('screen-result');
+}
+
+function showDefeat(reason){
+  const correct=S.correctCount;
+  $('#defeatEmoji').textContent = reason==='lives' ? '💔' : '⏰';
+  $('#defeatTitle').textContent = reason==='lives' ? 'ЖИЗНИ ЗАКОНЧИЛИСЬ!' : 'ВРЕМЯ ВЫШЛО!';
+  $('#defeatReason').textContent = reason==='lives'
+    ? 'Ты потерял все ❤️. Попробуй ещё раз — теперь ты знаешь больше!'
+    : 'Ты не успел пройти все задания. Соберись и попробуй быстрее!';
+  $('#defeatName').textContent=S.name;
+  $('#defCorrect').textContent=correct;
+  $('#defScore').textContent=S.score;
+  $('#defTask').textContent=S.idx+(S.answered?1:0);
+  showScreen('screen-defeat');
+}
+
+/* ═══════════════════════════════════════════════
+   СТАРТ
+   ═══════════════════════════════════════════════ */
+window.addEventListener('load',()=>nameInput.focus());
+</script>
+</body>
+</html>
